@@ -17,12 +17,14 @@ module.exports = async (self) => {
     self.client.on("ready", async () => {
         console.info("[ReactionRole] Fetching messages");
 
-        self.config.forEach(async rr => {
-            rr.guildID = self.client.channels.cache.get(rr.channelID).guild.id;
-            await self.database.createMessage(rr);
-        });
-        let savedConfig = await self.rrModel.find();
-        self.importConfig(savedConfig);
+        if (self.mongoURL) {
+            self.config.forEach(async rr => {
+                rr.guildID = self.client.channels.cache.get(rr.channelID).guild.id;
+                await self.database.createMessage(rr);
+            });
+            let savedConfig = await self.rrModel.find();
+            self.importConfig(savedConfig);
+        }
 
         for (let { channelID, messageID, reactions } of self.config) {
             let message = await self.client.channels.cache.get(channelID).messages.fetch(messageID).catch(err => {
